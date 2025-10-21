@@ -152,6 +152,13 @@ public class ABB<T extends Comparable<T>> {
             sucesor.der = _raiz.der;
             sucesor.padre = null;
             _raiz = sucesor;
+
+        if (_raiz.izq != null) {
+            _raiz.izq.padre = _raiz;
+        }
+        if (_raiz.der != null) {
+            _raiz.der.padre = _raiz;
+        }
         }
         _cardinal--;
     }
@@ -174,8 +181,12 @@ public class ABB<T extends Comparable<T>> {
             // es más chico
             if (nodoAEliminar.izq != null){
                 padre.izq = nodoAEliminar.izq;
+                padre.izq.padre = padre;
             } else { 
                 padre.izq = nodoAEliminar.der;
+                if (padre.izq != null){
+                    padre.izq.padre = padre;
+                }
             }
             // siempre lo de la izq va a ser menor. 
             // no me tengo que fijar si lo que conecto es más grande o no que el padre.
@@ -183,11 +194,15 @@ public class ABB<T extends Comparable<T>> {
         } else {
             if (nodoAEliminar.izq != null){
                 padre.der = nodoAEliminar.izq;
+                padre.der.padre = padre;
             } else { 
                 padre.der = nodoAEliminar.der;
+                if (padre.der != null){
+                    padre.der.padre = padre;
+                }                
             }
-        }
-        _cardinal--;
+
+        }  _cardinal--;
     }
 
     // # 4: Eliminar con dos hijos
@@ -208,16 +223,14 @@ public class ABB<T extends Comparable<T>> {
         sucesor.der = nodoAEliminar.der;
         sucesor.izq = nodoAEliminar.izq;
 
-        // 4. los hijos del que eliminé, les  pongo como padre al sucesor 
-        if (sucesor.izq != null){
+        sucesor.padre = padre;
+
+        if (sucesor.izq != null) {
             sucesor.izq.padre = sucesor;
         }
-        if (sucesor.der != null){
+        if (sucesor.der != null) {
             sucesor.der.padre = sucesor;
         }
-
-        // 5. el padre del sucesor es el padre del que eliminé 
-        sucesor.padre = padre;
 
         _cardinal--;
     }
@@ -299,18 +312,62 @@ public class ABB<T extends Comparable<T>> {
 
 
     public String toString(){
-        throw new UnsupportedOperationException("No implementada aun");
+        String mensaje = "";
+        mensaje += "{";
+        mensaje = completarStringRecursivo(_raiz,mensaje);
+        mensaje += "}"; 
+        return mensaje;
+    }
+
+    private String completarStringRecursivo(Nodo nodo, String mensajeACompleatr){
+        if (nodo == null){
+            return mensajeACompleatr;
+        }
+        mensajeACompleatr = completarStringRecursivo(nodo.izq, mensajeACompleatr);
+        if (mensajeACompleatr.length() > 1){
+            mensajeACompleatr += ","; 
+        }
+        mensajeACompleatr += nodo.valor;
+
+        mensajeACompleatr = completarStringRecursivo(nodo.der, mensajeACompleatr);
+
+        return mensajeACompleatr;
     }
 
     public class ABB_Iterador {
         private Nodo _actual;
 
+        public ABB_Iterador(){
+            // quiero empezar desde el más chicquito
+            _actual = _raiz;
+            if (_actual != null){
+                while (_actual.izq != null){
+                    _actual = _actual.izq;
+                }
+            }
+        }
         public boolean haySiguiente() {            
-            throw new UnsupportedOperationException("No implementada aun");
+            return _actual != null;
+            //throw new UnsupportedOperationException("No implementada aun");
         }
     
         public T siguiente() {
-            throw new UnsupportedOperationException("No implementada aun");
+            T valor = _actual.valor;
+
+            // cuando tengo parte de la derecha
+            if (_actual.der != null){
+                _actual = buscarSucesor(_actual);
+            
+            // cuando no. tenog que hayar el primer padre del que soy hijo izq
+            } else {
+                Nodo padre = _actual.padre;
+                while (padre != null && _actual == padre.der){
+                    _actual = padre;
+                    padre = _actual.padre;
+                }
+                _actual = padre;
+            }
+            return valor;
         }
     }
 
