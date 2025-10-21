@@ -105,31 +105,24 @@ public class ABB<T extends Comparable<T>> {
     }
 
     public void eliminar(T elem){
-        // 0. no está. no hago nada 
-        boolean estaElemento = pertenece(elem); 
-        // TENGO QUE VER CUANDO QUIERO ELIMINAR LA RAIZ¡!!¡!¡
 
+        if (pertenece(elem)){
 
-        if (estaElemento){
-            // si es la raiz
+            // 1. Es la raiz
             if (_raiz.valor.compareTo(elem) == 0){
                 eliminarRaiz(_raiz, elem);
                 return;
             }
 
-            //  no es la raiz, busco al padre
+            //  2. No es la raiz 
             Nodo padre = buscarPadreRecursivo(_raiz, elem);
-            if (padre == null){
-                return;
-            }
             Nodo nodoAEliminar = buscarNodoAEliminar(padre, elem);
-
             int hijos = cantHijos(nodoAEliminar);
 
             
-            if (hijos == 0){// 1. no tiene hijos
+            if (hijos == 0){
                 eliminarConCeroHijos(padre,elem);
-            } else if (hijos == 1){ //2. tengo 1 hijo
+            } else if (hijos == 1){
                 eliminarConUnHijo(padre, nodoAEliminar,elem); 
             } else {
                 eliminarConDosHijos(padre, nodoAEliminar, elem);
@@ -216,15 +209,14 @@ public class ABB<T extends Comparable<T>> {
             }
         }
         _cardinal--;
-        
     }
 
-    
+    // # 4: Eliminar con dos hijos
     private void eliminarConDosHijos (Nodo padre, Nodo nodoAEliminar, T elem){
         Nodo sucesor = buscarSucesor(nodoAEliminar);
-        Nodo hijoDerSucesor = sucesor.der;
+        Nodo hijoDerSucesor = sucesor.der; // lo guardo para que no se me pierda
 
-        // acomodo el lugar donde estaba el sucesor 
+        // 1. acomodo el lugar donde estaba el sucesor 
         if (sucesor.padre.izq == sucesor){
             sucesor.padre.izq = hijoDerSucesor;
         } else {
@@ -235,18 +227,18 @@ public class ABB<T extends Comparable<T>> {
             hijoDerSucesor.padre = sucesor.padre;
         }
 
-        // acomodo el lugar que saqué 
+        // 2. acomodo el lugar que saqué 
         if (esHijoIzquierdo(padre, elem)){
             padre.izq = sucesor;
         } else {
             padre.der = sucesor;
         }
 
-        // el sucesor se queda con los hijos del que elimino
+        // 3. el sucesor se queda con los hijos del nodo que elimino
         sucesor.der = nodoAEliminar.der;
         sucesor.izq = nodoAEliminar.izq;
 
-        // los hijos del que eliminé, les  pongo como padre al sucesor 
+        // 4. los hijos del que eliminé, les  pongo como padre al sucesor 
         if (sucesor.izq != null){
             sucesor.izq.padre = sucesor;
         }
@@ -254,25 +246,30 @@ public class ABB<T extends Comparable<T>> {
             sucesor.der.padre = sucesor;
         }
 
-        // el padre del sucesor es el padre del que eliminé 
+        // 5. el padre del sucesor es el padre del que eliminé 
         sucesor.padre = padre;
 
         _cardinal--;
     }
 
+    // # 5: Buscar padre
+    private Nodo buscarPadreRecursivo(Nodo nodo, T elem){ 
+    Nodo padre = nodo;
 
-
-    // busco el sucesor:
-    private Nodo buscarSucesor(Nodo nodo) {
-        Nodo actual = nodo.der;
-        while (actual != null && actual.izq != null) {
-            actual = actual.izq;
-        }
-        return actual;
+    if (nodo == null) {
+        padre = null;
+    } else if ((nodo.izq != null && nodo.izq.valor.compareTo(elem) == 0) || (nodo.der != null && nodo.der.valor.compareTo(elem) == 0)){
+        padre = nodo;
+    // sigo buscando si no es ninguno de esos
+    } else if (nodo.valor.compareTo(elem) > 0){
+        padre = buscarPadreRecursivo(nodo.izq, elem);
+    } else if (nodo.valor.compareTo(elem) < 0){
+        padre = buscarPadreRecursivo(nodo.der, elem); 
     }
+    return padre;
+    }  
 
-
-
+    // 6 #: Busco nodo del que quiero eliminar
     private Nodo buscarNodoAEliminar(Nodo padre, T elem){
         Nodo aEliminar = null;
 
@@ -281,31 +278,26 @@ public class ABB<T extends Comparable<T>> {
         } else {
             aEliminar = padre.der;
         }
+
         return aEliminar;
     }
 
+    // 7 #: ¿Está a la izquierda?
     private boolean esHijoIzquierdo(Nodo padre, T elem){
         return padre.izq != null && padre.izq.valor.compareTo(elem) == 0;
     }
 
-    // busco al padre 
-    private Nodo buscarPadreRecursivo(Nodo nodo, T elem){ 
-        Nodo padre = nodo;
-
-        if (nodo == null) {
-            padre = null;
-        } else if ((nodo.izq != null && nodo.izq.valor.compareTo(elem) == 0) || (nodo.der != null && nodo.der.valor.compareTo(elem) == 0)){
-            padre = nodo;
-        } else if (nodo.valor.compareTo(elem) > 0){
-            padre = buscarPadreRecursivo(nodo.izq, elem);
-        } else if (nodo.valor.compareTo(elem) < 0){
-            padre = buscarPadreRecursivo(nodo.der, elem); 
+    
+    // 8 #: Busco el sucesor (el más chico del lado derecho)
+    private Nodo buscarSucesor(Nodo nodo) {
+        Nodo actual = nodo.der;
+        while (actual != null && actual.izq != null) {
+            actual = actual.izq;
         }
-        return padre;
-    } 
-   
+        return actual;
+    }
 
-    // cantidad de hijos de un nodo
+    // 9 #: Cantidad de hijos de un nodo
     private int cantHijos(Nodo nodo) {
         int totalHijos = 0;
         
