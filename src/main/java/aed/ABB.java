@@ -136,6 +136,89 @@ public class ABB<T extends Comparable<T>> {
             }
         }
     }
+
+    // AUXILIARES
+
+    // A #1: Eliminar raiz
+    private void eliminarRaiz (Nodo raiz, T elem){
+        int hijos = cantHijos(raiz);
+
+        if (hijos == 0){
+            _raiz = null;
+        } else if (hijos == 1){
+            if (_raiz.izq != null){
+                _raiz = _raiz.izq; 
+            } else {
+                _raiz =_raiz.der;
+            }
+            _raiz.padre = null;
+        } else {
+            Nodo sucesor = buscarSucesor(_raiz);
+            Nodo hijoDeSucesor = sucesor.der;
+
+            // saco el sucesor de su lugar 
+            if (sucesor.padre.izq == sucesor){
+                sucesor.padre.izq = hijoDeSucesor;
+            } else {
+                sucesor.padre.der = hijoDeSucesor;
+            }
+
+            if (hijoDeSucesor != null){
+                hijoDeSucesor.padre = sucesor.padre;
+            }
+
+            // sucesor es mi nueva raiz 
+            sucesor.izq  = _raiz.izq;
+            sucesor.der = _raiz.der;
+            sucesor.padre = null;
+            _raiz = sucesor;
+
+            // acomodo el resto de padre con los hijos 
+            if (_raiz.izq != null){
+                _raiz.izq.padre = _raiz;
+            } 
+            if (_raiz.der != null){
+                _raiz.der.padre = _raiz;
+            }
+        }
+        _cardinal--;
+    }
+
+    // # 2: Eliminar sin hijos
+        private void eliminarConCeroHijos(Nodo padre, T elem){
+        if (esHijoIzquierdo(padre, elem)) {
+            padre.izq = null; 
+        } else {
+            padre.der = null;
+        }
+        _cardinal--;
+    }
+
+    // # 3: Eliminar con un hijo 
+        private void eliminarConUnHijo(Nodo padre, Nodo nodoAEliminar, T elem){
+        boolean ladoNodoAEliminar = esHijoIzquierdo(padre, elem);
+
+        if (ladoNodoAEliminar) {
+            // es más chico
+            if (nodoAEliminar.izq != null){
+                padre.izq = nodoAEliminar.izq;
+            } else { 
+                padre.izq = nodoAEliminar.der;
+            }
+            // siempre lo de la izq va a ser menor. 
+            // no me tengo que fijar si lo que conecto es más grande o no que el padre.
+            // lo que si veo es dónde está el hijo del que voy a sacar
+        } else {
+            if (nodoAEliminar.izq != null){
+                padre.der = nodoAEliminar.izq;
+            } else { 
+                padre.der = nodoAEliminar.der;
+            }
+        }
+        _cardinal--;
+        
+    }
+
     
     private void eliminarConDosHijos (Nodo padre, Nodo nodoAEliminar, T elem){
         Nodo sucesor = buscarSucesor(nodoAEliminar);
@@ -186,84 +269,6 @@ public class ABB<T extends Comparable<T>> {
             actual = actual.izq;
         }
         return actual;
-    }
-
-    private void eliminarRaiz (Nodo raiz, T elem){
-        int hijos = cantHijos(raiz);
-
-        if (hijos == 0){
-            _raiz = null;
-        } else if (hijos == 1){
-            if (_raiz.izq != null){
-                _raiz = _raiz.izq; 
-            } else {
-                _raiz =_raiz.der;
-            }
-            _raiz.padre = null;
-        } else {
-            Nodo sucesor = buscarSucesor(_raiz);
-            Nodo hijoDeSucesor = sucesor.der;
-
-            // saco el sucesor de su lugar 
-            if (sucesor.padre.izq == sucesor){
-                sucesor.padre.izq = hijoDeSucesor;
-            } else {
-                sucesor.padre.der = hijoDeSucesor;
-            }
-
-            if (hijoDeSucesor != null){
-                hijoDeSucesor.padre = sucesor.padre;
-            }
-
-            // sucesor es mi nueva raiz 
-            sucesor.izq  = _raiz.izq;
-            sucesor.der = _raiz.der;
-            sucesor.padre = null;
-            _raiz = sucesor;
-
-            // acomodo el resto de padre con los hijos 
-            if (_raiz.izq != null){
-                _raiz.izq.padre = _raiz;
-            } 
-            if (_raiz.der != null){
-                _raiz.der.padre = _raiz;
-            }
-        }
-        _cardinal--;
-    }
-
-    private void eliminarConUnHijo(Nodo padre, Nodo nodoAEliminar, T elem){
-        boolean ladoNodoAEliminar = esHijoIzquierdo(padre, elem);
-
-        if (ladoNodoAEliminar) {
-            // es más chico
-            if (nodoAEliminar.izq != null){
-                padre.izq = nodoAEliminar.izq;
-            } else { 
-                padre.izq = nodoAEliminar.der;
-            }
-            // siempre lo de la izq va a ser menor. 
-            // no me tengo que fijar si lo que conecto es más grande o no que el padre.
-            // lo que si veo es dónde está el hijo del que voy a sacar
-        } else {
-            if (nodoAEliminar.izq != null){
-                padre.der = nodoAEliminar.izq;
-            } else { 
-                padre.der = nodoAEliminar.der;
-            }
-        }
-        
-        _cardinal--;
-        
-    }
-    
-    private void eliminarConCeroHijos(Nodo padre, T elem){
-        if (esHijoIzquierdo(padre, elem)) {
-            padre.izq = null; 
-        } else {
-            padre.der = null;
-        }
-        _cardinal--;
     }
 
 
