@@ -9,9 +9,6 @@ public class ABB<T extends Comparable<T>> {
     private Nodo _raiz;
     private int _altura;
 
-
-    // Agregar atributos privados del Conjunto
-
     private class Nodo {
         T valor; 
         Nodo izq; 
@@ -37,7 +34,7 @@ public class ABB<T extends Comparable<T>> {
 
     public T minimo(){
         if (_raiz == null) {
-            return null; // El árbol está vacío
+            return null; 
         } else {
             Nodo actual = _raiz;
             while (actual.izq != null){
@@ -91,7 +88,7 @@ public class ABB<T extends Comparable<T>> {
     private boolean perteneceRecursivo(Nodo nodo, T elem){
         boolean res = true; 
 
-        if (nodo == null){// está vacío 
+        if (nodo == null){
             res = false;
             return res; 
         } else if (nodo.valor.compareTo(elem) == 0){ // lo encontré
@@ -110,31 +107,30 @@ public class ABB<T extends Comparable<T>> {
 
             // 1. Es la raiz
             if (_raiz.valor.compareTo(elem) == 0){
-                eliminarRaiz(_raiz, elem);
-                return;
-            }
+                eliminarRaiz();
 
+            } else {
             //  2. No es la raiz 
             Nodo padre = buscarPadreRecursivo(_raiz, elem);
             Nodo nodoAEliminar = buscarNodoAEliminar(padre, elem);
             int hijos = cantHijos(nodoAEliminar);
 
-            
-            if (hijos == 0){
+            if (hijos == 0){// 1. no tiene hijos
                 eliminarConCeroHijos(padre,elem);
-            } else if (hijos == 1){
+            } else if (hijos == 1){ //2. tengo 1 hijo
                 eliminarConUnHijo(padre, nodoAEliminar,elem); 
             } else {
                 eliminarConDosHijos(padre, nodoAEliminar, elem);
-            }
+                }
+            } 
         }
     }
 
     // AUXILIARES
 
     // A #1: Eliminar raiz
-    private void eliminarRaiz (Nodo raiz, T elem){
-        int hijos = cantHijos(raiz);
+    private void eliminarRaiz (){
+        int hijos = cantHijos(_raiz);
 
         if (hijos == 0){
             _raiz = null;
@@ -147,32 +143,15 @@ public class ABB<T extends Comparable<T>> {
             _raiz.padre = null;
         } else {
             Nodo sucesor = buscarSucesor(_raiz);
-            Nodo hijoDeSucesor = sucesor.der;
 
             // saco el sucesor de su lugar 
-            if (sucesor.padre.izq == sucesor){
-                sucesor.padre.izq = hijoDeSucesor;
-            } else {
-                sucesor.padre.der = hijoDeSucesor;
-            }
-
-            if (hijoDeSucesor != null){
-                hijoDeSucesor.padre = sucesor.padre;
-            }
+            desconectarSucesor(sucesor);
 
             // sucesor es mi nueva raiz 
             sucesor.izq  = _raiz.izq;
             sucesor.der = _raiz.der;
             sucesor.padre = null;
             _raiz = sucesor;
-
-            // acomodo el resto de padre con los hijos 
-            if (_raiz.izq != null){
-                _raiz.izq.padre = _raiz;
-            } 
-            if (_raiz.der != null){
-                _raiz.der.padre = _raiz;
-            }
         }
         _cardinal--;
     }
@@ -214,18 +193,9 @@ public class ABB<T extends Comparable<T>> {
     // # 4: Eliminar con dos hijos
     private void eliminarConDosHijos (Nodo padre, Nodo nodoAEliminar, T elem){
         Nodo sucesor = buscarSucesor(nodoAEliminar);
-        Nodo hijoDerSucesor = sucesor.der; // lo guardo para que no se me pierda
 
         // 1. acomodo el lugar donde estaba el sucesor 
-        if (sucesor.padre.izq == sucesor){
-            sucesor.padre.izq = hijoDerSucesor;
-        } else {
-            sucesor.padre.der = hijoDerSucesor;
-        }
-
-        if (hijoDerSucesor != null){
-            hijoDerSucesor.padre = sucesor.padre;
-        }
+        desconectarSucesor(sucesor);
 
         // 2. acomodo el lugar que saqué 
         if (esHijoIzquierdo(padre, elem)){
@@ -311,6 +281,22 @@ public class ABB<T extends Comparable<T>> {
         
         return totalHijos;
     }
+
+    // 10 #: Acomodo caundo saco el sucesor
+    private void desconectarSucesor(Nodo sucesor) {
+    Nodo hijoDerSucesor = sucesor.der;
+    
+    if (sucesor.padre.izq == sucesor) {
+        sucesor.padre.izq = hijoDerSucesor;
+    } else {
+        sucesor.padre.der = hijoDerSucesor;
+    }
+
+    if (hijoDerSucesor != null) {
+        hijoDerSucesor.padre = sucesor.padre;
+    }
+    }
+
 
     public String toString(){
         throw new UnsupportedOperationException("No implementada aun");
